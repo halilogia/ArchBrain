@@ -210,12 +210,38 @@ const NebulaMap = () => {
     };
 
     initGraph();
-    // Removed auto-refresh interval (caused jitter)
+
+    // LIVE UPDATES (WebSocket & Polling)
+    const wsUrl = `ws://${API_BASE.replace('http://', '') || window.location.host}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'LOG') {
+                setLogs(prev => [...prev.slice(-50), `> [${new Date().toLocaleTimeString()}] ${data.message}`]);
+            }
+            if (data.type === 'COMMAND') {
+                if (data.action === 'SCAN') fetchScan();
+            }
+        } catch (e) {}
+    };
+
+    const statusInterval = setInterval(async () => {
+        try {
+            const res = await fetch(`${API_BASE}/api/status`);
+            if (res.ok) {
+                const data = await res.json();
+                setServerStatus(data);
+            }
+        } catch (e) {}
+    }, 2000);
 
     return () => {
         isMounted = false;
+        ws.close();
+        clearInterval(statusInterval);
         if (graphRef.current) { try { graphRef.current.pauseAnimation(); graphRef.current._destructor(); graphRef.current = null; } catch(e) {} }
-        // clearInterval(statusInterval);
     }
   }, []);
 
