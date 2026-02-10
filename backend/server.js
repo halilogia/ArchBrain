@@ -30,6 +30,7 @@ const systemLogs = [`> [${new Date().toLocaleTimeString()}] Neural Systems Initi
 
 let broadcast = (data) => {
     if (data.type === 'LOG' && data.message) {
+        console.error(`[SENTINEL_HUB]: Broadcaster - ${data.message}`);
         systemLogs.push(`> [${new Date().toLocaleTimeString()}] ${data.message}`);
         if (systemLogs.length > 100) systemLogs.shift();
     }
@@ -404,7 +405,9 @@ if (process.env.MCP_ONLY) {
             mcpServer.connect(wsTransport).catch(() => {});
         } else {
             // General Broadcast WS handling for UI
+            console.error(`[SENTINEL_HUB]: UI Client Connected! (Total: ${wss.clients.size})`);
             ws.on('message', () => { });
+            ws.send(JSON.stringify({ type: 'LOG', message: "Neural Link Synchronized with Hub." }));
         }
     });
 
@@ -412,13 +415,19 @@ if (process.env.MCP_ONLY) {
     // Re-bind broadcast function to use the new wss
     broadcast = (data) => {
         if (data.type === 'LOG' && data.message) {
+            console.error(`[SENTINEL_HUB]: Broadcaster - ${data.message}`);
             systemLogs.push(`> [${new Date().toLocaleTimeString()}] ${data.message}`);
             if (systemLogs.length > 100) systemLogs.shift();
         }
         if (wss) {
-            wss.clients.forEach(client => {
-                if (client.readyState === 1) client.send(JSON.stringify(data));
-            });
+            const clientCount = wss.clients.size;
+            if (clientCount > 0) {
+                wss.clients.forEach(client => {
+                    if (client.readyState === 1) client.send(JSON.stringify(data));
+                });
+            } else if (data.type === 'LOG') {
+                console.error(`[SENTINEL_HUB]: No UI clients connected. Message buffered.`);
+            }
         }
     };
 

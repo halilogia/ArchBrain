@@ -203,16 +203,24 @@ const NebulaMap = () => {
                      .onNodeDragEnd((node: any) => { node.fx = node.x; node.fy = node.y; node.fz = node.z; });
         graphInstance.onNodeHover((node: any) => setHoverNode(node));
           
+    const initGraph = async () => {
+        // ... (existing init code)
         if (isMounted) {
             graphRef.current = graphInstance;
             fetchScan(); 
+            // Fetch initial logs
+            try {
+                const res = await fetch(`${API_BASE}/api/logs`);
+                const data = await res.json();
+                if (data.logs) setLogs(data.logs);
+            } catch(e) {}
         }
     };
 
     initGraph();
 
     // LIVE UPDATES (WebSocket & Polling)
-    const wsUrl = `ws://${API_BASE.replace('http://', '') || window.location.host}`;
+    const wsUrl = `ws://127.0.0.1:5050`; // Force explicit local IP
     const ws = new WebSocket(wsUrl);
 
     ws.onmessage = (event) => {
