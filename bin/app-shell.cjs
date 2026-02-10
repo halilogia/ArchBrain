@@ -8,7 +8,9 @@ const fs = require('fs');
 const { spawn } = require('child_process');
 
 // GPU & Linux Wayland Fixes
-app.disableHardwareAcceleration();
+// app.disableHardwareAcceleration(); // Disabled to allow GPU offloading
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
+app.commandLine.appendSwitch('disable-software-rasterizer');
 
 let win;
 let settingsWin;

@@ -195,9 +195,9 @@ const NebulaMap = () => {
         graphInstance.d3Force('collide', d3.forceCollide(nodeSize * 3));
         
         graphInstance.d3Force('radial', null);
-        graphInstance.d3AlphaDecay(0.04);
-        graphInstance.d3VelocityDecay(0.4);
-        graphInstance.cooldownTicks(100);
+        graphInstance.d3AlphaDecay(0.12); // Faster simulation settle
+        graphInstance.d3VelocityDecay(0.6);
+        graphInstance.cooldownTicks(50); // Stop simulation much earlier
 
         graphInstance.onNodeDrag((node: any) => { node.fx = node.x; node.fy = node.y; node.fz = node.z; })
                      .onNodeDragEnd((node: any) => { node.fx = node.x; node.fy = node.y; node.fz = node.z; });
@@ -235,7 +235,7 @@ const NebulaMap = () => {
                 setServerStatus(data);
             }
         } catch (e) {}
-    }, 2000);
+    }, 5000); // Increased polling interval to 5s to save CPU
 
     return () => {
         isMounted = false;
