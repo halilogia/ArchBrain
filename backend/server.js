@@ -263,11 +263,22 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     if (name === "get_system_status") {
+        if (!isHub) {
+            try {
+                const res = await fetch(`http://127.0.0.1:${PORT}/api/status`);
+                const data = await res.json();
+                return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+            } catch (e) {}
+        }
         const status = { uptime: process.uptime(), watcher: watchActive ? 'ACTIVE' : 'SLEEPING', mcp: mcpActive ? 'ONLINE' : 'OFFLINE' };
         return { content: [{ type: "text", text: JSON.stringify(status, null, 2) }] };
     }
 
     if (name === "control_sentinel_service") {
+        if (!isHub) {
+            await forwardToHub('/api/command', { action: args.service === 'WATCHER' ? 'TOGGLE_WATCHER' : 'TOGGLE_MCP' });
+            return { content: [{ type: "text", text: `Forwarding command to Hub...` }] };
+        }
         if (args.service === "WATCHER") watchActive = !watchActive;
         if (args.service === "MCP") mcpActive = !mcpActive;
         const msg = `${args.service} is now ${args.service === "WATCHER" ? (watchActive ? 'ACTIVE' : 'SLEEPING') : (mcpActive ? 'ONLINE' : 'OFFLINE')}`;
@@ -276,10 +287,17 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (name === "write_to_sentinel_log") {
         await forwardToHub('/api/log', { message: args.message });
-        return { content: [{ type: "text", text: `Success: ${args.message}` }] };
+        return { content: [{ type: "text", text: `Success` }] };
     }
 
     if (name === "get_sentinel_logs") {
+        if (!isHub) {
+            try {
+                const res = await fetch(`http://127.0.0.1:${PORT}/api/logs`);
+                const data = await res.json();
+                return { content: [{ type: "text", text: data.logs.join('\n') }] };
+            } catch (e) {}
+        }
         return { content: [{ type: "text", text: systemLogs.join('\n') }] };
     }
 
@@ -298,6 +316,7 @@ app.get('/api/status', (req, res) => res.json({
     watcher: watchActive ? 'ACTIVE' : 'SLEEPING', 
     mcp: mcpActive ? 'ONLINE' : 'OFFLINE' 
 }));
+app.get('/api/logs', (req, res) => res.json({ logs: systemLogs }));
 
 app.post('/api/log', express.json(), (req, res) => {
     broadcast({ type: 'LOG', message: req.body.message });

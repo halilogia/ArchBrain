@@ -227,15 +227,23 @@ const NebulaMap = () => {
         } catch (e) {}
     };
 
+    ws.onerror = () => {
+        setLogs(prev => [...prev.slice(-50), `> [${new Date().toLocaleTimeString()}] ⚠️ WS CONNECTION ERROR`]);
+    };
+
     const statusInterval = setInterval(async () => {
         try {
             const res = await fetch(`${API_BASE}/api/status`);
             if (res.ok) {
                 const data = await res.json();
                 setServerStatus(data);
+            } else {
+                setLogs(prev => [...prev.slice(-50), `> [${new Date().toLocaleTimeString()}] ⚠️ STATUS API FAIL: ${res.status}`]);
             }
-        } catch (e) {}
-    }, 5000); // Increased polling interval to 5s to save CPU
+        } catch (e) {
+             setLogs(prev => [...prev.slice(-50), `> [${new Date().toLocaleTimeString()}] ⚠️ STATUS API OFFLINE`]);
+        }
+    }, 5000); 
 
     return () => {
         isMounted = false;
