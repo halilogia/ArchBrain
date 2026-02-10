@@ -6,7 +6,7 @@ const fs = require('fs');
 // Electron paketinden executable path'ini al
 let electronPath;
 try {
-  electronPath = require(path.join(__dirname, 'node_modules', 'electron', 'index.js'));
+  electronPath = require(path.join(__dirname, '..', 'node_modules', 'electron', 'index.js'));
 } catch (e) {
   // Eğerrequire başarısız olursa (path yapısı farklıysa) direkt npx ile şansımızı deneriz
   electronPath = 'electron'; 

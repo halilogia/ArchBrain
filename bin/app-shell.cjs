@@ -60,7 +60,7 @@ function processBuffer() {
 function startMcp() {
   if (mcpProcess) { mcpProcess.kill(); mcpProcess = null; }
   console.log("-> Activating Neurological Core...");
-  mcpProcess = spawn('node', [path.join(APP_DIR, 'backend', 'server.js')], {
+  mcpProcess = spawn('node', [path.join(APP_DIR, '..', 'backend', 'server.js')], {
     cwd: APP_DIR,
     env: { ...process.env, PROJECT_ROOT: PROJECT_ROOT, NODE_ENV: 'production' }
   });
@@ -128,7 +128,7 @@ function createWindow() {
     width: 1240, height: 900, backgroundColor: '#020205',
     webPreferences: { nodeIntegration: true, contextIsolation: false }
   });
-  win.loadFile(path.join(APP_DIR, 'dist', 'index.html'));
+  win.loadFile(path.join(APP_DIR, '..', 'dist', 'index.html'));
   startMcp();
 }
 

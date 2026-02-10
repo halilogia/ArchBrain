@@ -4,7 +4,7 @@
   "version": "5.6.0",
   "type": "module",
   "bin": {
-    "arch-brain": "./cli.cjs"
+    "arch-brain": "./bin/arch-brain.cjs"
   },
   "scripts": {
     "dev": "vite",
